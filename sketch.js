@@ -7,9 +7,9 @@ Optimization ideas:
 
 
 function setup() {
-    createCanvas(600,600);
+    createCanvas(windowWidth - 20, windowHeight - 20);
 }
 
 function draw() {
-    background(220);
+    background(0);
 }
