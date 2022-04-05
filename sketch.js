@@ -10,7 +10,7 @@ class Pixel {
 
 var imgBefore, imgAfter;
 
-const pixelSize = 6;
+const pixelSize = 4;
 var radius = Math.round(200 / pixelSize);
 
 const buffer = [];
