@@ -1,31 +1,21 @@
 /// <reference path="./node_modules/@types/p5/global.d.ts" />
 
 class Pixel {
-    constructor(x, y, value) {
+    constructor(x,y) {
         this.x = x;
         this.y = y;
-        this.value = value;
     }
-
-    // interpolate() {
-    //     this.current += (this.goal - this.current) * 0.01;
-    // // }
-
-    // isFinished() {
-    //     return Math.abs(this.current - this.goal) < 0.1;
-    // }
 }
+
 
 var imgBefore, imgAfter;
 
-const pixelSize = 10;
-var radius;
+const pixelSize = 6;
+var radius = Math.round(200 / pixelSize);
 
-var buffer = [];
-var nextIter = true;
-
-const perFrame = 1000;
-
+const buffer = [];
+const perFrame = 10000;
+var initialCount = 0;
 
 function preload() {
     imgBefore = loadImage('assets/before.jpg');
@@ -34,71 +24,75 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth - 20, windowHeight - 20);
-    rectMode(CENTER);
 
-
-    radius = int(200 / pixelSize) * pixelSize;
-
-    // resize images
     imgBefore.resize(width, height);
     imgAfter.resize(width, height);
 
-    console.log(imgBefore.get(0, 0));
 
-    noStroke();
-    frameRate(60);
+    frameRate(120);
+    
+    
+    
 
-    for (var x = pixelSize / 2; x < width; x += pixelSize) {
-        for (var y = pixelSize / 2; y < height; y += pixelSize) {
-            buffer.push(new Pixel(x, y, 0, 0));
+    for(var x = 0; x < int(width / pixelSize) + 1; x++) {
+        for(var y = 0; y < int(height / pixelSize) + 1; y++) {
+            buffer.unshift(new Pixel(x,y));
+            initialCount++;
         }
     }
 }
 
-async function draw() {
+function draw() {
     var count = 0;
+    noStroke();
 
-    const mx = int((mouseX - pixelSize / 2) / pixelSize) * pixelSize + pixelSize / 2;
-    const my = int((mouseY - pixelSize / 2) / pixelSize) * pixelSize + pixelSize / 2;
+    while(count < perFrame && buffer.length > 0) {
+        count++;
+        const p = buffer.shift();
 
-    for(var x = mx - radius - pixelSize; x <= mx + pixelSize +  radius; x += pixelSize) {
-        for(var y = my - radius - pixelSize; y <= my + pixelSize + radius; y+= pixelSize) {
-            if(x > 0 && x < width && y > 0 && y < height) {
-                updatePixel(x,y,getTransition(x,y));
+        const val = getTransition(p.x,p.y);
+
+        // render pixel
+        const colors = [imgBefore.get(p.x * pixelSize,p.y * pixelSize),imgAfter.get(p.x * pixelSize,p.y * pixelSize)];
+        fill(Array.from({length: 4}, (_, k) => colors[1][k] * val + colors[0][k] * (1 - val)));
+        rect(p.x * pixelSize, p.y * pixelSize, pixelSize, pixelSize);
+
+        if(val != 0) {
+            buffer.push(p);
+        }
+
+        if(initialCount > 0) {
+            initialCount--;
+        }
+
+    }
+
+    if(initialCount == 0) {
+        const mx = int(mouseX / pixelSize);
+        const my = int(mouseY / pixelSize);
+
+        for(var x = mx - radius; x <= mx + radius; x++) {
+            for(var y = my - radius; y <= my + radius; y++) {
+                pushPixel(x,y);
             }
         }
     }
-
-    console.log("Rendering " + buffer.length + " pixels");
-    while(count < perFrame && buffer.length > 0) {
-        count++;
-        const p = buffer.pop();
-        const colors = await Promise.all([getColor(p.x, p.y, imgBefore), getColor(p.x, p.y, imgAfter)]);
-        fill(Array.from({length: 4}, (_, k) => colors[1][k] * p.value + colors[0][k] * (1 - p.value)));
-        
-        rect(p.x, p.y, pixelSize, pixelSize);
-    }
 }
 
-async function getColor(x, y, img) {
-    return img.get(x, y);
+function pushPixel(x,y) {
+    for(const p of buffer) {
+        if(p.x == x && p.y == y) {
+            return;
+        }
+    }
+    buffer.push(new Pixel(x,y));
 }
 
 function getTransition(x, y) {
-    const d = dist(x, y, mouseX, mouseY);
+    const d = dist(x, y, mouseX / pixelSize, mouseY / pixelSize);
     if (d > radius) {
         return 0;
     } else {
         return map(d, 0, radius, 1,0);
     }
-}
-
-function updatePixel(x, y, value) {
-    for (const pixel of buffer) {
-        if (pixel.x == x && pixel.y == y) {
-            pixel.current = value;
-            return;
-        }
-    }
-    buffer.push(new Pixel(x, y, value));
 }
