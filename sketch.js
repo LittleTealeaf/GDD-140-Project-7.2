@@ -10,11 +10,15 @@ class Pixel {
 
 var imgBefore, imgAfter;
 
+//Setting radius of pixels
 const pixelSize = 4;
 var radius = Math.round(200 / pixelSize);
 
+//Buffer of 'pixels needed to be rendered'
 const buffer = [];
+//Number of renders per frame
 const perFrame = 10000;
+//Initial counter of pixels before it pushes pixels around the mouse to the buffer
 var initialCount = 0;
 
 function preload() {
@@ -25,6 +29,7 @@ function preload() {
 function setup() {
     createCanvas(windowWidth - 20, windowHeight - 20);
 
+    //resize to canvas
     imgBefore.resize(width, height);
     imgAfter.resize(width, height);
 
@@ -34,6 +39,7 @@ function setup() {
     
     
 
+    //Initial populating buffer
     for(var x = 0; x < int(width / pixelSize) + 1; x++) {
         for(var y = 0; y < int(height / pixelSize) + 1; y++) {
             buffer.unshift(new Pixel(x,y));
@@ -43,13 +49,17 @@ function setup() {
 }
 
 function draw() {
+    //Local count of number of renders this frame
     var count = 0;
     noStroke();
 
     while(count < perFrame && buffer.length > 0) {
+        //Increment count
         count++;
+        //Take from buffer
         const p = buffer.shift();
 
+        //Get the transition color
         const val = getTransition(p.x,p.y);
 
         // render pixel
@@ -57,16 +67,19 @@ function draw() {
         fill(Array.from({length: 4}, (_, k) => colors[1][k] * val + colors[0][k] * (1 - val)));
         rect(p.x * pixelSize, p.y * pixelSize, pixelSize, pixelSize);
 
+        //If the value wasn't 0
         if(val != 0) {
             buffer.push(p);
         }
 
+        //Decrement if initial count was more
         if(initialCount > 0) {
             initialCount--;
         }
 
     }
 
+    
     if(initialCount == 0) {
         const mx = int(mouseX / pixelSize);
         const my = int(mouseY / pixelSize);
