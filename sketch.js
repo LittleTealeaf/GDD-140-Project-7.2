@@ -34,7 +34,7 @@ function setup() {
     imgAfter.resize(width, height);
 
 
-    frameRate(120);
+    frameRate(30);
     
     
     
