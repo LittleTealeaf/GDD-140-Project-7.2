@@ -47,6 +47,6 @@ code .
 
 5. **Working with the Project** With working in vscode, there are many ways to work on this project. The suggested means of working with the project is using the [Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server) extension on visual studio code. Once you have it installed, right click on `index.html` and select "Live Preview: Show Preview", as shown below:
 
-![](assets/readmelivepreview.png)
+![](docs/readmelivepreview.png)
 
 6. **Start Exploring!** The script for each project is located in the `sketch.js` file. Feel free to explore and experiment with the project, and you'll view live feedback as you work!
